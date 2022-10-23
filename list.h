@@ -1,6 +1,8 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
 
@@ -11,10 +13,6 @@
 typedef int Elem_t;
 
 const Elem_t POISON = 0xBEEF;
-
-#if _DEBUG
-typedef void (*PrintFunction)(FILE *file, Elem_t value);
-#endif
 
 enum ListErrors {
     LIST_OK               =  0,
@@ -38,6 +36,15 @@ struct ListElement_t {
     long next     = POISON;
 };
 
+#if _DEBUG
+struct ListDebug_t {
+    const char *createFunc = nullptr; 
+    const char *createFile = nullptr; 
+    const char *name       = nullptr;
+    int         createLine = 0;
+};
+#endif
+
 struct List_t {
     ListElement_t *values        = {};
     size_t        header         = POISON;
@@ -45,16 +52,54 @@ struct List_t {
     size_t        free           = POISON;
 
     size_t        size           = POISON;
+
+    #if _DEBUG
+    ListDebug_t debugInfo = {};
+    #endif
 };
 
-void ListCtor(List_t *list, size_t listSize, int *err = nullptr);
-
-int ListVerify(List_t *list);
-
-void ListDtor(List_t *list, int *err = nullptr);
+void _listCtor(List_t *list, size_t listSize, int *err = nullptr);
 
 #if _DEBUG
-void closeLogfile(void);
+
+    #define listCtor(list, ...) {                               \
+        if (list) {                                              \
+            (list)->debugInfo.createFunc = __PRETTY_FUNCTION__;   \
+            (list)->debugInfo.createFile = __FILE_NAME__;          \
+            (list)->debugInfo.createLine = __LINE__;                \
+            (list)->debugInfo.name       = #list;                    \
+        }                                                             \
+        _listCtor(list, ##__VA_ARGS__);                                \
+    }                                                                   \
+
+#else 
+
+    #define listCtor(list, ...) {         \
+        _listCtor(list, ##__VA_ARGS__);    \
+    }                                       \
+
+#endif
+
+int listVerify(List_t *list);
+
+void listDtor(List_t *list, int *err = nullptr);
+
+#if _DEBUG
+
+    void mprintf(FILE *file, const char *fmt...);
+
+    void dumpList(List_t *list, int errorCode, const char *fileName, const char *function, int line);
+
+    #define DUMP(list, errorCode) {                                                 \
+        dumpList(list, errorCode, __FILE_NAME__, __PRETTY_FUNCTION__, __LINE__);     \
+    }                                                                                 \
+
+    void closeLogfile(void);
+
+#else 
+
+    #define DUMP(list, errorCode) {}
+
 #endif
 
 #endif
