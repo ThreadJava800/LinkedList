@@ -18,5 +18,7 @@ int main() {
     DUMP(&list, 0);
     listInsert(&list, 14, 1);
     DUMP(&list, 0);
+    listInsert(&list, 15, 2);
+    DUMP(&list, 0);
     listDtor(&list, &err);
 }

@@ -72,6 +72,7 @@ void listInsert(List_t *list, Elem_t value, size_t index, int *err) {
     CHECK(list->values[index].previous == -1, INDEX_INCORRECT);
 
     // == push back
+    //printf("%d ", list->values[list->tail].previous);
     if (list->values[list->tail].previous < (long) index + 1) {
         size_t nextFree = (size_t) list->values[list->free].next;
         list->values[list->free].value     = value;
@@ -95,7 +96,6 @@ void listInsert(List_t *list, Elem_t value, size_t index, int *err) {
     list->values[list->values[index + 1].next].previous = (long) list->free;
     list->values[index+1].next  = (long) list->free;
 
-    list->tail = list->free;
     list->free = nextFree;
 
 }
