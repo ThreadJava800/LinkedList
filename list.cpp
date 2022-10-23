@@ -82,7 +82,22 @@ void listInsert(List_t *list, Elem_t value, size_t index, int *err) {
 
         list->tail = list->free;
         list->free = nextFree;
+
+        return;
     }
+
+    // push after
+    size_t nextFree = (size_t) list->values[list->free].next;
+    list->values[list->free].value     = value;
+    list->values[list->free].next      = list->values[index + 1].next;
+    list->values[list->free].previous  = (long) (index + 1);
+
+    list->values[list->values[index + 1].next].previous = (long) list->free;
+    list->values[index+1].next  = (long) list->free;
+
+    list->tail = list->free;
+    list->free = nextFree;
+
 }
 
 void listDtor(List_t *list, int *err) {
