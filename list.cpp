@@ -6,16 +6,10 @@ int   onClose = atexit(closeLogfile);
 #endif
 
 void _listCtor(List_t *list, size_t listSize, int *err) {
-    if (!list) {
-        if (err) *err = LIST_NULL;
-        return;
-    }
+    CHECK(!list, LIST_NULL);
 
     list->values = (ListElement_t*) calloc(listSize, sizeof(ListElement_t));
-    if (!list->values) {
-        if (err) *err = CANNOT_ALLOC_MEM;
-        return;
-    }
+    CHECK(!list->values, CANNOT_ALLOC_MEM);
     list->size = listSize;
 
     list->values[0].value = POISON;
@@ -25,7 +19,11 @@ void _listCtor(List_t *list, size_t listSize, int *err) {
     for (size_t i = 1; i < listSize; i++) {
         list->values[i].value    =  0;
         list->values[i].previous = -1;
-        list->values[i].next     = -1;
+        if (i != listSize - 1) {
+            list->values[i].next = (long) i + 1;
+        } else {
+            list->values[i].next = 0;
+        }
     }
 
     list->free    = 1;
@@ -33,8 +31,6 @@ void _listCtor(List_t *list, size_t listSize, int *err) {
     list->tail    = 0;
 
     if (err) *err = listVerify(list);
-
-    DUMP(list, 0);
 }
 
 int listVerify(List_t *list) {
@@ -56,15 +52,43 @@ int listVerify(List_t *list) {
     return LIST_OK;
 }
 
-void listDtor(List_t *list, int *err) {
-    if (!list) {
-        if (err) *err = LIST_NULL;
+void listInsert(List_t *list, Elem_t value, size_t index, int *err) {
+    CHECK(!list, LIST_NULL);
+    CHECK(index + 1 > list->size, INDEX_BIGGER_SIZE);
+
+    // push to empty list
+    if (list->tail == 0 && index == 0) {
+        size_t nextFree = (size_t) list->values[list->free].next;
+        list->values[list->free].value     = value;
+        list->values[list->free].next      = 0;
+        list->values[list->free].previous  = 0;
+
+        list->tail = list->free;
+        list->free = nextFree;
+
         return;
     }
 
-    if (!list->values) {
-        if (err) *err = LIST_DATA_NULL;
-    } else {
+    CHECK(list->values[index].previous == -1, INDEX_INCORRECT);
+
+    // == push back
+    if (list->values[list->tail].previous < (long) index + 1) {
+        size_t nextFree = (size_t) list->values[list->free].next;
+        list->values[list->free].value     = value;
+        list->values[list->free].next      = 0;
+        list->values[list->free].previous  = (long) list->tail;
+
+        list->values[list->tail].next      = (long) list->free;
+
+        list->tail = list->free;
+        list->free = nextFree;
+    }
+}
+
+void listDtor(List_t *list, int *err) {
+    CHECK(!list, LIST_NULL);
+
+    if (list->values) {
         free(list->values);
     }
 
@@ -74,6 +98,7 @@ void listDtor(List_t *list, int *err) {
     list->size   = POISON;
 }
 
+#if _DEBUG
 void mprintf(FILE *file, const char *fmt...) {
     va_list args;
     va_start(args, fmt);
@@ -113,8 +138,10 @@ void dumpList(List_t *list, int errorCode, const char *fileName, const char *fun
     for (size_t i = 0; i < list->size; i++) {
         mprintf(logFile, "%9d ", list->values[i].previous);
     }
+    mprintf(logFile, "\n\n");
 }
 
 void closeLogfile(void) {
     fclose(logFile);
 }
+#endif

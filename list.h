@@ -28,6 +28,8 @@ enum ListErrors {
     ELEM_NEXT_POISONED    = -10,
 
     CANNOT_ALLOC_MEM      = -11,
+    INDEX_BIGGER_SIZE     = -12,
+    INDEX_INCORRECT       = -13,
 };
 
 struct ListElement_t {
@@ -58,6 +60,14 @@ struct List_t {
     #endif
 };
 
+#define CHECK(expression, errCode) { \
+    if (expression) {                 \
+        DUMP(list, errCode);           \
+        if (err) *err = errCode;        \
+        abort();                         \
+    }                                     \
+}                                          \
+
 void _listCtor(List_t *list, size_t listSize, int *err = nullptr);
 
 #if _DEBUG
@@ -81,6 +91,8 @@ void _listCtor(List_t *list, size_t listSize, int *err = nullptr);
 #endif
 
 int listVerify(List_t *list);
+
+void listInsert(List_t *list, Elem_t value, size_t index, int *err = nullptr);
 
 void listDtor(List_t *list, int *err = nullptr);
 

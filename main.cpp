@@ -9,6 +9,9 @@ int main() {
     List_t list = {};
     int err = 0;
     listCtor(&list, MAX_LIST_LENGTH, &err);
-    printf("%ld ", list.values[2].next);
+    listInsert(&list, 5, 0);
+    DUMP(&list, 0);
+    listInsert(&list, 6, 1);
+    DUMP(&list, 0);
     listDtor(&list, &err);
 }
