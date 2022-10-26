@@ -15,7 +15,7 @@ int main() {
     DUMP(&list, 0);
     _listInsertPhys(&list, 7, 3);
     DUMP(&list, 0);
-    _listRemovePhys(&list, 3);
+    _listRemovePhys(&list, 2);
     DUMP(&list, 0);
     // _listInsertPhys(&list, 6, 1);
     // DUMP(&list, 0);

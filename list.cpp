@@ -147,7 +147,22 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
         return returnValue;
     }
 
-    return 0;
+    // BASA case
+    Elem_t returnValue = list->values[index].value;
+
+    list->values[index].value      = POISON;
+
+    list->values[list->values[index].previous].next     = list->values[index].next;
+        list->values[list->values[index].next].previous = list->values[index].previous;
+    list->values[index]                       .next     = (long) list->free;
+    list->values[index]                       .next     = (long) list->free;
+
+    list->values[index]                   .previous = -1;
+
+    list->size--;
+    list->free = index;
+
+    return returnValue;
 }
 
 void listDtor(List_t *list, int *err) {
