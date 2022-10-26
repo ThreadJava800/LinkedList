@@ -30,6 +30,8 @@ enum ListErrors {
     CANNOT_ALLOC_MEM      = -11,
     INDEX_BIGGER_SIZE     = -12,
     INDEX_INCORRECT       = -13,
+    NOTHING_TO_DELETE     = -14,
+    ALREADY_POISON        = -15,
 };
 
 struct ListElement_t {
@@ -54,6 +56,9 @@ struct List_t {
     size_t        free           = POISON;
 
     size_t        size           = POISON;
+    size_t        capacity       = POISON;
+
+    short         linearized     = 1;
 
     #if _DEBUG
     ListDebug_t debugInfo = {};
@@ -92,7 +97,9 @@ void _listCtor(List_t *list, size_t listSize, int *err = nullptr);
 
 int listVerify(List_t *list);
 
-void listInsert(List_t *list, Elem_t value, size_t index, int *err = nullptr);
+void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err = nullptr);
+
+Elem_t _listRemovePhys(List_t *list, size_t index, int *err = nullptr);
 
 void listDtor(List_t *list, int *err = nullptr);
 
