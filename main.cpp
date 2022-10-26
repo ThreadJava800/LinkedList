@@ -16,7 +16,11 @@ int main() {
     listInsert(&list, 4, 1);
     listInsert(&list, 5, 1);
     DUMP(&list, 0);
-    listRemove(&list, 1);
+    int val = listRemove(&list, 1);
+    printf("haha%d ", val);
+    DUMP(&list, 0);
+    val = listRemove(&list, 1);
+        printf("haha%d ", val);
     DUMP(&list, 0);
 
     listDtor(&list, &err);

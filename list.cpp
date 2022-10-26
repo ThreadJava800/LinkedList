@@ -214,6 +214,8 @@ Elem_t listRemove(List_t *list, size_t index, int *err) {
     size_t pos = list->header;
     if (logicIndex == 0) return pos;
 
+    if (list->linearized) return logicIndex + 1;
+
     for (size_t i = 0; i < logicIndex; i++) {
         if (list->values[pos].next == 0) {
             return pos;
