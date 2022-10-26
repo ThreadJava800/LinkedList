@@ -9,22 +9,15 @@ int main() {
     List_t list = {};
     int err = 0;
     listCtor(&list, 10, &err);
-    _listInsertPhys(&list, 5, 1);
+
+    listInsert(&list, 1, 0);
+    listInsert(&list, 2, 1);
+    listInsert(&list, 3, 1);
+    listInsert(&list, 4, 1);
+    listInsert(&list, 5, 1);
     DUMP(&list, 0);
-    _listInsertPhys(&list, 6, 2);
+    listRemove(&list, 1);
     DUMP(&list, 0);
-    _listInsertPhys(&list, 7, 3);
-    DUMP(&list, 0);
-    _listRemovePhys(&list, 2);
-    DUMP(&list, 0);
-    // _listInsertPhys(&list, 6, 1);
-    // DUMP(&list, 0);
-    // _listInsertPhys(&list, 7, 2);
-    // DUMP(&list, 0);
-    // _listInsertPhys(&list, 8, 3);
-    // DUMP(&list, 0);
-    // _listInsertPhys(&list, 9, 2);
-    // DUMP(&list, 0);
 
     listDtor(&list, &err);
 

@@ -35,7 +35,7 @@ enum ListErrors {
 };
 
 struct ListElement_t {
-    Elem_t value    = POISON;
+    Elem_t value  = POISON;
     long previous = POISON;
     long next     = POISON;
 };
@@ -99,7 +99,13 @@ int listVerify(List_t *list);
 
 void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err = nullptr);
 
+void listInsert(List_t *list, Elem_t value, size_t index, int *err = nullptr);
+
 Elem_t _listRemovePhys(List_t *list, size_t index, int *err = nullptr);
+
+Elem_t listRemove(List_t *list, size_t index, int *err = nullptr);
+
+[[nodiscard]] size_t logicToPhysics(List_t *list, size_t logicIndex, int *err = nullptr);
 
 void listDtor(List_t *list, int *err = nullptr);
 

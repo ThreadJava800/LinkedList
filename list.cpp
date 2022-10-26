@@ -64,13 +64,15 @@ void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err) {
         list->values[list->free].next      = 0;
         list->values[list->free].previous  = 0;
 
-        list->tail = list->free;
-        list->free = nextFree;
+        list->tail       = list->free;
+        list->free       = nextFree;
+        list->linearized = 1;
+        list->header     = 1;
 
         list->size++;
 
         return;
-    }
+    }   
 
     // == push back
     if (list->tail <= index) {
@@ -81,8 +83,8 @@ void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err) {
 
         list->values[list->tail].next      = (long) list->free;
 
-        list->tail = list->free;
-        list->free = nextFree;
+        list->tail       = list->free;
+        list->free       = nextFree;
 
         list->size++;
 
@@ -100,12 +102,21 @@ void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err) {
     list->values[list->values[index].next].previous = (long) list->free;
     list->values[index]                   .next     = (long) list->free;
 
-    list->tail = list->free;
-    list->free = nextFree;
+    list->tail       = list->free;
+    list->free       = nextFree;
+    list->linearized = 0;
  
     list->size++;
 
     if (err) *err = listVerify(list);
+}
+
+void listInsert(List_t *list, Elem_t value, size_t index, int *err) {
+    CHECK(!list, LIST_NULL);
+    CHECK(index > list->capacity, INDEX_BIGGER_SIZE);
+
+    size_t physIndex = logicToPhysics(list, index);
+    _listInsertPhys(list, value, physIndex, err);
 }
 
 Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
@@ -113,6 +124,8 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
     CHECK(index > list->capacity, INDEX_BIGGER_SIZE);
     CHECK(list->size == 0, NOTHING_TO_DELETE);
     CHECK(list->values[index].value == POISON, ALREADY_POISON);
+
+    printf("%d ", index);
 
     // delete last element in list
     if (list->size == 1) {
@@ -122,9 +135,26 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
         list->values[index].next       = (long) list->free;
         list->values[index].previous   = -1;
 
-        list->free = index;
-        list->size = 0;
-        list->tail = 0;
+        list->free       = index;
+        list->size       = 0;
+        list->tail       = 0;
+        list->linearized = 1;
+        list->header     = 0;
+
+        return returnValue;
+    }
+
+    // delete first element (in non-empty list)
+    if (index == 1) {
+        Elem_t returnValue = list->values[index].value;
+
+        list->values[index].value      = POISON;
+        list->header                   = (size_t) list->values[index].next;
+        list->values[index].next       = (long) list->free;
+        list->values[index].previous   = -1;
+
+        list->size--;
+        list->free   = index;
 
         return returnValue;
     }
@@ -142,7 +172,8 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
         list->values[index].previous   = -1;
 
         list->size--;
-        list->free = index;
+        list->free       = index;
+        list->linearized = 0;
 
         return returnValue;
     }
@@ -153,16 +184,46 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
     list->values[index].value      = POISON;
 
     list->values[list->values[index].previous].next     = list->values[index].next;
-        list->values[list->values[index].next].previous = list->values[index].previous;
+    list->values[list->values[index].next]    .previous = list->values[index].previous;
     list->values[index]                       .next     = (long) list->free;
     list->values[index]                       .next     = (long) list->free;
 
-    list->values[index]                   .previous = -1;
+    list->values[index].previous = -1;
 
     list->size--;
     list->free = index;
 
     return returnValue;
+}
+
+Elem_t listRemove(List_t *list, size_t index, int *err) {
+    CHECK(!list, LIST_NULL);
+    CHECK(index > list->capacity, INDEX_BIGGER_SIZE);
+    CHECK(list->size == 0, NOTHING_TO_DELETE);
+
+    size_t physIndex = logicToPhysics(list, index);
+    return _listRemovePhys(list, physIndex, err);
+}
+
+[[nodiscard]] size_t logicToPhysics(List_t *list, size_t logicIndex, int *err) {
+    CHECK(!list, LIST_NULL);
+    CHECK(logicIndex > list->capacity, INDEX_INCORRECT);
+
+    if (list->size == 0) return 1;
+
+    size_t pos = list->header;
+    if (logicIndex == 0) return pos;
+
+    for (size_t i = 0; i < logicIndex; i++) {
+        if (list->values[pos].next == 0) {
+            return pos;
+        }
+        pos = (size_t) list->values[pos].next;
+    }
+
+    printf("%d\n", pos);
+
+    return pos;
 }
 
 void listDtor(List_t *list, int *err) {
