@@ -355,6 +355,38 @@ void listDtor(List_t *list, int *err) {
     list->linearized = 1;
 }
 
+void visualGraph(List_t *list, const char *outputName) {
+    if (!list) return;
+
+    FILE *tempFile = fopen("temp.dot", "w");
+    if (!tempFile) return;
+
+    mprintf(tempFile, "digraph structs {\n");
+    mprintf(tempFile, "\trankdir=LR;\n");
+    for (size_t i = 0; i < list->capacity; i++) {
+        mprintf(
+                    tempFile, 
+                    "\tlabel%lu[shape=record, style=rounded, label=\"{%d | {%ld | %ld} }\"];\n", 
+                    i, 
+                    list->values[i].value, 
+                    list->values[i].next,
+                    list->values[i].previous
+                );
+    }
+
+    mprintf(tempFile, "}");
+
+    fclose(tempFile);
+
+    char command1[MAX_STR_LENGTH] = "dot -Tsvg temp.dot > ";
+    strcat(command1, outputName);
+    system(command1);
+    
+    char command2[MAX_STR_LENGTH] = "xdg-open ";
+    strcat(command2, outputName);
+    system(command2);
+}
+
 #if _DEBUG
 void mprintf(FILE *file, const char *fmt...) {
     va_list args;

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <math.h>
+#include <string.h>
 
 #ifndef _DEBUG
 #define _DEBUG 0
@@ -16,6 +17,8 @@ typedef int Elem_t;
 const Elem_t POISON = 0xBEEF;
 
 const int RESIZE_COEFFICIENT = 2;
+
+const int MAX_STR_LENGTH = 4096;
 
 enum ListErrors {
     LIST_OK               =  0,
@@ -37,6 +40,7 @@ enum ListErrors {
     NOTHING_TO_DELETE     = -14,
     ALREADY_POISON        = -15,
     LOSING_DATA           = -16,
+    CANNOT_OPEN_FILE      = -17,
 };
 
 struct ListElement_t {
@@ -125,6 +129,8 @@ void listRealloc(List_t *list, size_t newCapacity, int *err = nullptr);
 void poisonList(List_t *list, size_t newCapacity, size_t oldCapacity, int *err = nullptr);
 
 void listDtor(List_t *list, int *err = nullptr);
+
+void visualGraph(List_t *list, const char *outputName);
 
 #if _DEBUG
 

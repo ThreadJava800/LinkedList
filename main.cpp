@@ -25,6 +25,7 @@ int main() {
     DUMP(&list, 0);
     listResize(&list, 5);
     DUMP(&list, 0);
+    visualGraph(&list, "test.png");
 
     listDtor(&list, &err);
 

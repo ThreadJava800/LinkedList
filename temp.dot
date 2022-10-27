@@ -1,0 +1,8 @@
+digraph structs {
+	rankdir=LR;
+	label0[shape=record, style=rounded, label="{48879 | {0 | 0} }"];
+	label1[shape=record, style=rounded, label="{1 | {1 | 0} }"];
+	label2[shape=record, style=rounded, label="{4 | {2 | 1} }"];
+	label3[shape=record, style=rounded, label="{3 | {0 | 2} }"];
+	label4[shape=record, style=rounded, label="{48879 | {0 | -1} }"];
+}
