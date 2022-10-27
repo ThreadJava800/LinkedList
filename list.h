@@ -95,6 +95,8 @@ void _listCtor(List_t *list, size_t listSize, int *err = nullptr);
 
 #endif
 
+void fillElemList(ListElement_t *listElems, size_t capacity, int *err = nullptr);
+
 int listVerify(List_t *list);
 
 void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err = nullptr);
@@ -106,6 +108,8 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err = nullptr);
 Elem_t listRemove(List_t *list, size_t index, int *err = nullptr);
 
 [[nodiscard]] size_t logicToPhysics(List_t *list, size_t logicIndex, int *err = nullptr);
+
+void listLinearize(List_t *list, int *err = nullptr);
 
 void listDtor(List_t *list, int *err = nullptr);
 

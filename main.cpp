@@ -15,12 +15,11 @@ int main() {
     listInsert(&list, 3, 1);
     listInsert(&list, 4, 1);
     listInsert(&list, 5, 1);
+    listRemove(&list, 1);
     DUMP(&list, 0);
-    int val = listRemove(&list, 1);
-    printf("haha%d ", val);
+    listRemove(&list, 1);
     DUMP(&list, 0);
-    val = listRemove(&list, 1);
-        printf("haha%d ", val);
+    listLinearize(&list);
     DUMP(&list, 0);
 
     listDtor(&list, &err);

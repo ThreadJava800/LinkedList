@@ -12,19 +12,7 @@ void _listCtor(List_t *list, size_t listSize, int *err) {
     CHECK(!list->values, CANNOT_ALLOC_MEM);
     list->capacity = listSize;
 
-    list->values[0].value    = POISON;
-    list->values[0].previous = 0;
-    list->values[0].next     = 0;
-
-    for (size_t i = 1; i < listSize + 1; i++) {
-        list->values[i].value    =  POISON;
-        list->values[i].previous = -1;
-        if (i != listSize - 1) {
-            list->values[i].next = (long) i + 1;
-        } else {
-            list->values[i].next = 0;
-        }
-    }
+    fillElemList(list->values, listSize, err);
 
     list->free    = 1;
     list->header  = 0;
@@ -32,6 +20,24 @@ void _listCtor(List_t *list, size_t listSize, int *err) {
     list->size    = 0;
 
     if (err) *err = listVerify(list);
+}
+
+void fillElemList(ListElement_t *listElems, size_t capacity, int *err) {
+    if (!listElems) return;
+
+    listElems[0].value    = POISON;
+    listElems[0].previous = 0;
+    listElems[0].next     = 0;
+
+    for (size_t i = 1; i < capacity + 1; i++) {
+        listElems[i].value    =  POISON;
+        listElems[i].previous = -1;
+        if (i != capacity - 1) {
+            listElems[i].next = (long) i + 1;
+        } else {
+            listElems[i].next = 0;
+        }
+    }
 }
 
 int listVerify(List_t *list) {
@@ -163,10 +169,11 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
     if (list->tail == index) {
         Elem_t returnValue = list->values[index].value;
 
-        list->values[index].value      = POISON;
+        list->values[index].value = POISON;
 
-        list->values[list->values[index].previous].next = 0;
-        list->values[index]                       .next = (long) list->free;
+        list->values[list->values[index].previous].next     = list->values[index].next;
+        list->values[list->values[index].next]    .previous = list->values[index].previous;
+        list->values[index]                       .next     = (long) list->free;
 
         list->tail = (size_t) list->values[index].previous;
         list->values[index].previous   = -1;
@@ -228,6 +235,35 @@ Elem_t listRemove(List_t *list, size_t index, int *err) {
     return pos;
 }
 
+void listLinearize(List_t *list, int *err) {
+    CHECK(!list, LIST_NULL);
+
+    if (list->linearized) return;
+
+    ListElement_t *elements = (ListElement_t *) calloc(list->capacity + 1, sizeof(ListElement_t));
+    CHECK(!elements, CANNOT_ALLOC_MEM);
+
+    fillElemList(elements, list->capacity, err);
+
+    size_t oldIndex = list->header;
+    for (size_t i = 0; i < list->size; i++) {
+        elements[i + 1].value = list->values[oldIndex].value;
+
+        if (i + 1 >= list->size) elements[i + 1].next  = 0;
+        else                     elements[i + 1].next  = (long) i + 1;
+
+        if (i == 0) elements[i + 1].previous = 0;
+        else        elements[i + 1].previous = (long) i;
+
+        oldIndex = (size_t) list->values[oldIndex].next;
+    }
+
+    free(list->values);
+    list->values = elements;
+
+    if (err) *err = listVerify(list);
+}
+
 void listDtor(List_t *list, int *err) {
     CHECK(!list, LIST_NULL);
 
@@ -264,6 +300,7 @@ void dumpList(List_t *list, int errorCode, const char *fileName, const char *fun
     mprintf(logFile, "\tfree = %lu\n", list->free);
     mprintf(logFile, "\tsize = %lu\n", list->size);
     mprintf(logFile, "\tcapacity = %lu\n", list->capacity);
+    mprintf(logFile, "\tlinearized = %d\n", list->linearized);
 
     if (!list->values) {
         mprintf(logFile, "Values are null\n");
