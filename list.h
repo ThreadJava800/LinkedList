@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <math.h>
 
 #ifndef _DEBUG
 #define _DEBUG 0
@@ -14,14 +15,7 @@ typedef int Elem_t;
 
 const Elem_t POISON = 0xBEEF;
 
-/**
- *
- * I use this coefficient to resize list when needed.
- * I used this link while searching info:
- * http://artem.sobolev.name/posts/2013-02-10-std-vector-growth.html
- *
- **/
-const double RESIZE_COEFFICIENT = 1.61;
+const int RESIZE_COEFFICIENT = 2;
 
 enum ListErrors {
     LIST_OK               =  0,
@@ -81,7 +75,6 @@ struct List_t {
     if (expression) {                 \
         DUMP(list, errCode);           \
         if (err) *err = errCode;        \
-        abort();                         \
     }                                     \
 }                                          \
 
@@ -127,7 +120,7 @@ void listResize(List_t *list, size_t newCapacity, int *err = nullptr);
 
 int checkForPoisons(List_t *list, size_t newCapacity, int *err = nullptr);
 
-void _listRealloc(List_t *list, size_t newCapacity, int *err = nullptr);
+void listRealloc(List_t *list, size_t newCapacity, int *err = nullptr);
 
 void poisonList(List_t *list, size_t newCapacity, size_t oldCapacity, int *err = nullptr);
 

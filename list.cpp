@@ -65,7 +65,12 @@ int listVerify(List_t *list) {
 
 void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err) {
     CHECK(!list, LIST_NULL);
-    CHECK(index > list->capacity, INDEX_BIGGER_SIZE);
+    CHECK(index > list->capacity + 1, INDEX_BIGGER_SIZE);
+
+    if (list->capacity - list->size <= 2) {
+        size_t newCapacity = list->capacity * RESIZE_COEFFICIENT;
+        listResize(list, newCapacity, err);
+    }
 
     // push to empty list
     if (list->tail == 0 && index == 1) {
@@ -102,6 +107,7 @@ void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err) {
     }
 
     CHECK(list->values[index].previous == -1, INDEX_INCORRECT);
+    printf("shit %lu\n", index);
 
     // push after
     size_t nextFree = (size_t) list->values[list->free].next;
@@ -190,7 +196,7 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
     // BASA case
     Elem_t returnValue = list->values[index].value;
 
-    list->values[index].value      = POISON;
+    list->values[index].value = POISON;
 
     list->values[list->values[index].previous].next     = list->values[index].next;
     list->values[list->values[index].next]    .previous = list->values[index].previous;
@@ -276,7 +282,7 @@ void listResize(List_t *list, size_t newCapacity, int *err) {
     if (newCapacity < list->capacity) {
         // checking if no sensible data will be deleted
         if (checkForPoisons(list, newCapacity, err)) {
-            _listRealloc(list, newCapacity, err);
+            listRealloc(list, newCapacity, err);
             list->values[newCapacity - 1].next = 0;
         } else {
             if (err) *err = LOSING_DATA;
@@ -286,8 +292,8 @@ void listResize(List_t *list, size_t newCapacity, int *err) {
     }
 
     size_t oldCapacity = list->capacity;
-    _listRealloc(list, newCapacity, err);
-     poisonList (list, newCapacity, oldCapacity, err);
+    listRealloc(list, newCapacity, err);
+    poisonList (list, newCapacity, oldCapacity, err);
 }
 
 int checkForPoisons(List_t *list, size_t newCapacity, int *err) {
@@ -305,7 +311,7 @@ int checkForPoisons(List_t *list, size_t newCapacity, int *err) {
      return 0; 
 }
 
-void _listRealloc(List_t *list, size_t newCapacity, int *err) {
+void listRealloc(List_t *list, size_t newCapacity, int *err) {
     CHECK(!list, LIST_NULL);
     CHECK(!list->values, LIST_DATA_NULL);
 
@@ -318,12 +324,13 @@ void _listRealloc(List_t *list, size_t newCapacity, int *err) {
 void poisonList(List_t *list, size_t newCapacity, size_t oldCapacity, int *err) {
     CHECK(!list, LIST_NULL);
     CHECK(!list->values, LIST_DATA_NULL);
-    CHECK(newCapacity > oldCapacity, INDEX_INCORRECT);
+    CHECK(newCapacity < oldCapacity, INDEX_INCORRECT);
+
+    list->values[list->free].next = (long) oldCapacity;
 
     for (size_t i = oldCapacity; i < newCapacity; i++) {
         list->values[i].value    = POISON;
         list->values[i].previous = -1;
-        list->free               = i;
 
         if (i == newCapacity - 1) {
             list->values[i].next = 0;
