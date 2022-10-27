@@ -18,7 +18,7 @@ const Elem_t POISON = 0xBEEF;
 
 const int RESIZE_COEFFICIENT = 2;
 
-const int MAX_STR_LENGTH = 4096;
+const int MAX_COMMAND_LENGTH = 2 << 8;
 
 enum ListErrors {
     LIST_OK               =  0,

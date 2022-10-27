@@ -118,7 +118,6 @@ void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err) {
     list->values[list->values[index].next].previous = (long) list->free;
     list->values[index]                   .next     = (long) list->free;
 
-    list->tail       = list->free;
     list->free       = nextFree;
     list->linearized = 0;
  
@@ -175,6 +174,7 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
 
     // pop from back
     if (list->tail == index) {
+        printf("int");
         Elem_t returnValue = list->values[index].value;
 
         list->values[index].value = POISON;
@@ -256,7 +256,7 @@ void listLinearize(List_t *list, int *err) {
         elements[i + 1].value = list->values[oldIndex].value;
 
         if (i + 1 >= list->size) elements[i + 1].next  = 0;
-        else                     elements[i + 1].next  = (long) i + 1;
+        else                     elements[i + 1].next  = (long) i + 2;
 
         if (i == 0) elements[i + 1].previous = 0;
         else        elements[i + 1].previous = (long) i;
@@ -363,28 +363,90 @@ void visualGraph(List_t *list, const char *outputName) {
 
     mprintf(tempFile, "digraph structs {\n");
     mprintf(tempFile, "\trankdir=LR;\n");
+
+    // info block
+    //     size_t        header         = POISON;
+    // size_t        tail           = POISON;
+    // size_t        free           = POISON;
+
+    // size_t        size           = POISON;
+    // size_t        capacity       = POISON;
+
+    // short         linearized     = 1;
+    // short         needLinear     = 2;
+    mprintf(
+                tempFile, 
+                "\tinfo[shape=record, style=\"rounded, filled\", fillcolor=\"#d0d1f2\", label=\"{{header: %lu | tail: %lu | free: %lu} | \
+                    {size: %lu | cap: %lu} | {linearized: %d |needLinear: %d} }\"];\n", 
+                list->header,
+                list->tail,
+                list->free,
+                list->size,
+                list->capacity,
+                list->linearized,
+                list->needLinear
+            );
+
     for (size_t i = 0; i < list->capacity; i++) {
+        char color[MAX_COMMAND_LENGTH];
+        if (i == 0) {
+            strcpy(color, "#f593a8");
+        } else if (list->values[i].value == POISON) {
+            strcpy(color, "#0ba172");
+        } else {
+            strcpy(color, "#72eb6c");
+        }
+
         mprintf(
                     tempFile, 
-                    "\tlabel%lu[shape=record, style=rounded, label=\"{%d | {%ld | %ld} }\"];\n", 
+                    "\tlabel%lu[shape=record, style=\"rounded, filled\", fillcolor=\"%s\", label=\"{val: %d | {n: %ld | p: %ld} }\"];\n", 
                     i, 
+                    color,
                     list->values[i].value, 
                     list->values[i].next,
                     list->values[i].previous
                 );
     }
 
+    for (size_t i = 0; i < list->capacity - 1; i++) {
+        mprintf(tempFile, "\tlabel%lu->label%lu [color=\"#dce6e3\", style=\"dashed\",arrowhead=\"none\"]", i, i + 1);
+    }
+
+    mprintf(tempFile, "\tlabel0->label0 [dir=both, color=\"red:blue\"]\n");
+
+    size_t index = list->header;
+    for (size_t i = 0; i < list->size; i++) {
+        size_t nextIndex = (size_t) list->values[index].next;
+        size_t prevIndex = (size_t) list->values[index].previous;
+        if (nextIndex == 0) break;
+
+        mprintf(tempFile, "\tlabel%lu->label%lu [color=\"red\"]\n", index, nextIndex);
+        if (prevIndex) mprintf(tempFile, "\tlabel%lu->label%lu [color=\"blue\"]\n", index, prevIndex);
+        index = nextIndex;
+    }
+
+    mprintf(tempFile, "\tlabel%lu->label%lu [color=\"blue\"]\n", list->tail, list->values[list->tail].previous);
+
+    index = list->free;
+    for (size_t i = 0; i < list->capacity - list->size; i++) {
+        size_t nextIndex = (size_t) list->values[index].next;
+        if (nextIndex == 0) break;
+
+        mprintf(tempFile, "\tlabel%lu->label%lu [color=\"#038c61\"]\n", index, nextIndex);
+        index = nextIndex;
+    }
+
     mprintf(tempFile, "}");
 
     fclose(tempFile);
 
-    char command1[MAX_STR_LENGTH] = "dot -Tsvg temp.dot > ";
-    strcat(command1, outputName);
-    system(command1);
+    char command[MAX_COMMAND_LENGTH] = "dot -Tsvg temp.dot > ";
+    strcat(command, outputName);
+    system(command);
     
-    char command2[MAX_STR_LENGTH] = "xdg-open ";
-    strcat(command2, outputName);
-    system(command2);
+    strcpy(command, "xdg-open ");
+    strcat(command, outputName);
+    system(command);
 }
 
 #if _DEBUG

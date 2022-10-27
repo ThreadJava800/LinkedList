@@ -17,13 +17,14 @@ int main() {
     listInsert(&list, 4, 1);
     DUMP(&list, 0);
     listInsert(&list, 5, 1);
-    listRemove(&list, 1);
     DUMP(&list, 0);
     listRemove(&list, 1);
     DUMP(&list, 0);
-    listLinearize(&list);
+    listRemove(&list, 1);
     DUMP(&list, 0);
-    listResize(&list, 5);
+    // listLinearize(&list);
+    // DUMP(&list, 0);
+    listResize(&list, 8);
     DUMP(&list, 0);
     visualGraph(&list, "test.png");
 
