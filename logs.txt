@@ -1,6 +1,6 @@
 Assertion failed with code 0
 in int main() at main.cpp(19)
-List_t[0x7fff547bf3e0] '&list' at int main() at main.cpp(11)
+List_t[0x7ffc0aaef480] '&list' at int main() at main.cpp(11)
 	header = 1
 	tail = 5
 	free = 2
@@ -16,7 +16,7 @@ Previous:
 
 Assertion failed with code 0
 in int main() at main.cpp(21)
-List_t[0x7fff547bf3e0] '&list' at int main() at main.cpp(11)
+List_t[0x7ffc0aaef480] '&list' at int main() at main.cpp(11)
 	header = 1
 	tail = 1
 	free = 5
@@ -32,17 +32,33 @@ Previous:
 
 Assertion failed with code 0
 in int main() at main.cpp(23)
-List_t[0x7fff547bf3e0] '&list' at int main() at main.cpp(11)
+List_t[0x7ffc0aaef480] '&list' at int main() at main.cpp(11)
 	header = 1
 	tail = 1
-	free = 5
+	free = 4
 	size = 3
 	capacity = 10
-	linearized = 0
+	linearized = 1
 Values:
     48879         1         4         3     48879     48879     48879     48879     48879     48879 
 Next:
         0         1         2         0         5         6         7         8         9         0 
 Previous:
         0         0         1         2        -1        -1        -1        -1        -1        -1 
+
+Assertion failed with code 0
+in int main() at main.cpp(25)
+List_t[0x7ffc0aaef480] '&list' at int main() at main.cpp(11)
+	header = 1
+	tail = 1
+	free = 4
+	size = 3
+	capacity = 5
+	linearized = 1
+Values:
+    48879         1         4         3     48879 
+Next:
+        0         1         2         0         0 
+Previous:
+        0         0         1         2        -1 
 

@@ -8,7 +8,7 @@ size_t MAX_LIST_LENGTH = 256;
 int main() {
     List_t list = {};
     int err = 0;
-    listCtor(&list, 10, &err);
+    listCtor(&list, 10, 1, &err);
 
     listInsert(&list, 1, 0);
     listInsert(&list, 2, 1);
@@ -20,6 +20,8 @@ int main() {
     listRemove(&list, 1);
     DUMP(&list, 0);
     listLinearize(&list);
+    DUMP(&list, 0);
+    listResize(&list, 5);
     DUMP(&list, 0);
 
     listDtor(&list, &err);

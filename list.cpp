@@ -5,7 +5,7 @@ FILE *logFile = fopen("logs.txt", "w");
 int   onClose = atexit(closeLogfile);
 #endif
 
-void _listCtor(List_t *list, size_t listSize, int *err) {
+void _listCtor(List_t *list, size_t listSize, short needLinear, int *err) {
     CHECK(!list, LIST_NULL);
 
     list->values = (ListElement_t*) calloc(listSize + 1, sizeof(ListElement_t));
@@ -14,16 +14,20 @@ void _listCtor(List_t *list, size_t listSize, int *err) {
 
     fillElemList(list->values, listSize, err);
 
-    list->free    = 1;
-    list->header  = 0;
-    list->tail    = 0;
-    list->size    = 0;
+    list->needLinear = needLinear;
+    list->free       = 1;
+    list->header     = 0;
+    list->tail       = 0;
+    list->size       = 0;
 
     if (err) *err = listVerify(list);
 }
 
 void fillElemList(ListElement_t *listElems, size_t capacity, int *err) {
-    if (!listElems) return;
+    if (!listElems) {
+        if (err) *err = LIST_DATA_NULL;
+        return;
+    }
 
     listElems[0].value    = POISON;
     listElems[0].previous = 0;
@@ -131,8 +135,6 @@ Elem_t _listRemovePhys(List_t *list, size_t index, int *err) {
     CHECK(list->size == 0, NOTHING_TO_DELETE);
     CHECK(list->values[index].value == POISON, ALREADY_POISON);
 
-    printf("%d ", index);
-
     // delete last element in list
     if (list->size == 1) {
         Elem_t returnValue = list->values[index].value;
@@ -230,8 +232,6 @@ Elem_t listRemove(List_t *list, size_t index, int *err) {
         pos = (size_t) list->values[pos].next;
     }
 
-    printf("%d\n", pos);
-
     return pos;
 }
 
@@ -259,9 +259,78 @@ void listLinearize(List_t *list, int *err) {
     }
 
     free(list->values);
-    list->values = elements;
+    list->values     = elements;
+    list->linearized = 1;
+    list->free       = list->size + 1;
 
     if (err) *err = listVerify(list);
+}
+
+void listResize(List_t *list, size_t newCapacity, int *err) {
+    CHECK(!list, LIST_NULL);
+
+    if (list->needLinear) {
+        listLinearize(list, err);
+    }
+
+    if (newCapacity < list->capacity) {
+        // checking if no sensible data will be deleted
+        if (checkForPoisons(list, newCapacity, err)) {
+            _listRealloc(list, newCapacity, err);
+            list->values[newCapacity - 1].next = 0;
+        } else {
+            if (err) *err = LOSING_DATA;
+        }
+
+        return;
+    }
+
+    size_t oldCapacity = list->capacity;
+    _listRealloc(list, newCapacity, err);
+     poisonList (list, newCapacity, oldCapacity, err);
+}
+
+int checkForPoisons(List_t *list, size_t newCapacity, int *err) {
+     CHECK(!list, LIST_NULL);
+
+     size_t goodCounter = 0;
+     for (size_t i = list->capacity - 1; i > 0; i--) {
+        if (list->values[i].value == POISON) {
+            goodCounter++;
+        }
+
+        if (goodCounter >  list->capacity - newCapacity) return 1;
+     }  
+
+     return 0; 
+}
+
+void _listRealloc(List_t *list, size_t newCapacity, int *err) {
+    CHECK(!list, LIST_NULL);
+    CHECK(!list->values, LIST_DATA_NULL);
+
+    list->values = (ListElement_t *) realloc(list->values, newCapacity * sizeof(ListElement_t));
+    CHECK(!list->values, CANNOT_ALLOC_MEM);
+
+    list->capacity = newCapacity;
+}
+
+void poisonList(List_t *list, size_t newCapacity, size_t oldCapacity, int *err) {
+    CHECK(!list, LIST_NULL);
+    CHECK(!list->values, LIST_DATA_NULL);
+    CHECK(newCapacity > oldCapacity, INDEX_INCORRECT);
+
+    for (size_t i = oldCapacity; i < newCapacity; i++) {
+        list->values[i].value    = POISON;
+        list->values[i].previous = -1;
+        list->free               = i;
+
+        if (i == newCapacity - 1) {
+            list->values[i].next = 0;
+        } else {
+            list->values[i].next = (long) i + 1;
+        }
+    }
 }
 
 void listDtor(List_t *list, int *err) {

@@ -14,6 +14,15 @@ typedef int Elem_t;
 
 const Elem_t POISON = 0xBEEF;
 
+/**
+ *
+ * I use this coefficient to resize list when needed.
+ * I used this link while searching info:
+ * http://artem.sobolev.name/posts/2013-02-10-std-vector-growth.html
+ *
+ **/
+const double RESIZE_COEFFICIENT = 1.61;
+
 enum ListErrors {
     LIST_OK               =  0,
     LIST_NULL             = -1,
@@ -23,6 +32,7 @@ enum ListErrors {
     LIST_FREE_POISONED    = -5,
     LIST_SIZE_POISONED    = -6,
     LIST_DATA_NULL        = -7,
+
     ELEM_VALUE_POISONED   = -8,
     ELEM_PREV_POISONED    = -9,
     ELEM_NEXT_POISONED    = -10,
@@ -32,6 +42,7 @@ enum ListErrors {
     INDEX_INCORRECT       = -13,
     NOTHING_TO_DELETE     = -14,
     ALREADY_POISON        = -15,
+    LOSING_DATA           = -16,
 };
 
 struct ListElement_t {
@@ -59,6 +70,7 @@ struct List_t {
     size_t        capacity       = POISON;
 
     short         linearized     = 1;
+    short         needLinear     = 2;
 
     #if _DEBUG
     ListDebug_t debugInfo = {};
@@ -73,7 +85,7 @@ struct List_t {
     }                                     \
 }                                          \
 
-void _listCtor(List_t *list, size_t listSize, int *err = nullptr);
+void _listCtor(List_t *list, size_t listSize, short needLinear, int *err = nullptr);
 
 #if _DEBUG
 
@@ -110,6 +122,14 @@ Elem_t listRemove(List_t *list, size_t index, int *err = nullptr);
 [[nodiscard]] size_t logicToPhysics(List_t *list, size_t logicIndex, int *err = nullptr);
 
 void listLinearize(List_t *list, int *err = nullptr);
+
+void listResize(List_t *list, size_t newCapacity, int *err = nullptr);
+
+int checkForPoisons(List_t *list, size_t newCapacity, int *err = nullptr);
+
+void _listRealloc(List_t *list, size_t newCapacity, int *err = nullptr);
+
+void poisonList(List_t *list, size_t newCapacity, size_t oldCapacity, int *err = nullptr);
 
 void listDtor(List_t *list, int *err = nullptr);
 
