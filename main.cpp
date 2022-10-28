@@ -22,10 +22,10 @@ int main() {
     DUMP(&list, 0);
     listRemove(&list, 1);
     DUMP(&list, 0);
-    // listLinearize(&list);
     // DUMP(&list, 0);
     listResize(&list, 8);
     DUMP(&list, 0);
+    //listLinearize(&list);
     visualGraph(&list, "test.png");
 
     listDtor(&list, &err);

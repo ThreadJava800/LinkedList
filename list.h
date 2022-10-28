@@ -60,15 +60,15 @@ struct ListDebug_t {
 
 struct List_t {
     ListElement_t *values        = {};
-    size_t        header         = POISON;
-    size_t        tail           = POISON;
-    size_t        free           = POISON;
+    long        header         = POISON;
+    long        tail           = POISON;
+    long        free           = POISON;
 
-    size_t        size           = POISON;
-    size_t        capacity       = POISON;
+    long        size           = POISON;
+    long        capacity       = POISON;
 
     short         linearized     = 1;
-    short         needLinear     = 2;
+    short         needLinear     = 1;
 
     #if _DEBUG
     ListDebug_t debugInfo = {};
@@ -82,7 +82,7 @@ struct List_t {
     }                                     \
 }                                          \
 
-void _listCtor(List_t *list, size_t listSize, short needLinear, int *err = nullptr);
+void _listCtor(List_t *list, long listSize, short needLinear, int *err = nullptr);
 
 #if _DEBUG
 
@@ -104,29 +104,29 @@ void _listCtor(List_t *list, size_t listSize, short needLinear, int *err = nullp
 
 #endif
 
-void fillElemList(ListElement_t *listElems, size_t capacity, int *err = nullptr);
+void fillElemList(ListElement_t *listElems, long capacity, int *err = nullptr);
 
 int listVerify(List_t *list);
 
-void _listInsertPhys(List_t *list, Elem_t value, size_t index, int *err = nullptr);
+long _listInsertPhys(List_t *list, Elem_t value, long index, int *err = nullptr);
 
-void listInsert(List_t *list, Elem_t value, size_t index, int *err = nullptr);
+long listInsert(List_t *list, Elem_t value, long index, int *err = nullptr);
 
-Elem_t _listRemovePhys(List_t *list, size_t index, int *err = nullptr);
+Elem_t _listRemovePhys(List_t *list, long index, int *err = nullptr);
 
-Elem_t listRemove(List_t *list, size_t index, int *err = nullptr);
+Elem_t listRemove(List_t *list, long index, int *err = nullptr);
 
-[[nodiscard]] size_t logicToPhysics(List_t *list, size_t logicIndex, int *err = nullptr);
+[[nodiscard]] long logicToPhysics(List_t *list, long logicIndex, int *err = nullptr);
 
 void listLinearize(List_t *list, int *err = nullptr);
 
-void listResize(List_t *list, size_t newCapacity, int *err = nullptr);
+void listResize(List_t *list, long newCapacity, int *err = nullptr);
 
-int checkForPoisons(List_t *list, size_t newCapacity, int *err = nullptr);
+int checkForPoisons(List_t *list, long newCapacity, int *err = nullptr);
 
-void listRealloc(List_t *list, size_t newCapacity, int *err = nullptr);
+void listRealloc(List_t *list, long newCapacity, int *err = nullptr);
 
-void poisonList(List_t *list, size_t newCapacity, size_t oldCapacity, int *err = nullptr);
+void poisonList(List_t *list, long newCapacity, long oldCapacity, int *err = nullptr);
 
 void listDtor(List_t *list, int *err = nullptr);
 
