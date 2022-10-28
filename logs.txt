@@ -1,96 +1,56 @@
 Assertion failed with code 0
-in int main() at main.cpp(16)
-List_t[0x7ffe6cc68d60] '&list' at int main() at main.cpp(11)
-	header = 1
-	tail = 3
-	free = 4
-	size = 3
-	capacity = 5
+in int main() at main.cpp(12)
+List_t[0x7ffcce5d1d90] '&list' at int main() at main.cpp(11)
+	free = 1
+	size = 0
+	capacity = 10
 	linearized = 1
 Values:
-    48879         1         2         3     48879 
+    48879     48879     48879     48879     48879     48879     48879     48879     48879     48879 
 Next:
-        0         2         3         0         0 
+        0         2         3         4         5         6         7         8         9         0 
 Previous:
-        0         0         1         2        -1 
+        0        -1        -1        -1        -1        -1        -1        -1        -1        -1 
 
 Assertion failed with code 0
 in int main() at main.cpp(18)
-List_t[0x7ffe6cc68d60] '&list' at int main() at main.cpp(11)
-	header = 1
-	tail = 3
-	free = 5
-	size = 4
+List_t[0x7ffcce5d1d90] '&list' at int main() at main.cpp(11)
+	free = 2
+	size = 1
 	capacity = 10
 	linearized = 0
 Values:
-    48879         1         2         3         4     48879     48879     48879     48879     48879 
+    48879         1     48879     48879     48879     48879     48879     48879     48879     48879 
 Next:
-        0         2         4         0         3         6         7         8         9         0 
+        1         0         3         4         5         6         7         8         9         0 
 Previous:
-        0         0         1         4         2        -1        -1        -1        -1        -1 
+        0         0        -1        -1        -1        -1        -1        -1        -1        -1 
 
 Assertion failed with code 0
 in int main() at main.cpp(20)
-List_t[0x7ffe6cc68d60] '&list' at int main() at main.cpp(11)
-	header = 1
-	tail = 3
-	free = 6
-	size = 5
+List_t[0x7ffcce5d1d90] '&list' at int main() at main.cpp(11)
+	free = 3
+	size = 2
 	capacity = 10
 	linearized = 0
 Values:
-    48879         1         2         3         4         5     48879     48879     48879     48879 
+    48879         1         2     48879     48879     48879     48879     48879     48879     48879 
 Next:
-        0         2         5         0         3         4         7         8         9         0 
+        1         2         0         4         5         6         7         8         9         0 
 Previous:
-        0         0         1         4         5         2        -1        -1        -1        -1 
+        2         0         1        -1        -1        -1        -1        -1        -1        -1 
 
 Assertion failed with code 0
 in int main() at main.cpp(22)
-List_t[0x7ffe6cc68d60] '&list' at int main() at main.cpp(11)
-	header = 1
-	tail = 3
-	free = 2
-	size = 4
-	capacity = 10
-	linearized = 0
-Values:
-    48879         1     48879         3         4         5     48879     48879     48879     48879 
-Next:
-        0         5         6         0         3         4         7         8         9         0 
-Previous:
-        0         0        -1         4         5         1        -1        -1        -1        -1 
-
-Assertion failed with code 0
-in int main() at main.cpp(24)
-List_t[0x7ffe6cc68d60] '&list' at int main() at main.cpp(11)
-	header = 1
-	tail = 3
-	free = 5
+List_t[0x7ffcce5d1d90] '&list' at int main() at main.cpp(11)
+	free = 4
 	size = 3
 	capacity = 10
 	linearized = 0
 Values:
-    48879         1     48879         3         4     48879     48879     48879     48879     48879 
+    48879         1         2         3     48879     48879     48879     48879     48879     48879 
 Next:
-        0         4         6         0         3         2         7         8         9         0 
+        1         2         3         0         5         6         7         8         9         0 
 Previous:
-        0         0        -1         4         1        -1        -1        -1        -1        -1 
-
-Assertion failed with code 0
-in int main() at main.cpp(27)
-List_t[0x7ffe6cc68d60] '&list' at int main() at main.cpp(11)
-	header = 1
-	tail = 3
-	free = 5
-	size = 3
-	capacity = 8
-	linearized = 0
-Values:
-    48879         1     48879         3         4     48879     48879     48879 
-Next:
-        0         4         6         0         3         2         7         0 
-Previous:
-        0         0        -1         4         1        -1        -1        -1 
+        3         0         1         2        -1        -1        -1        -1        -1        -1 
 

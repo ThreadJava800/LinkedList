@@ -59,16 +59,14 @@ struct ListDebug_t {
 #endif
 
 struct List_t {
-    ListElement_t *values        = {};
-    long        header         = POISON;
-    long        tail           = POISON;
+    ListElement_t *values      = {};
     long        free           = POISON;
 
     long        size           = POISON;
     long        capacity       = POISON;
 
-    short         linearized     = 1;
-    short         needLinear     = 1;
+    short         linearized   = 1;
+    short         needLinear   = 1;
 
     #if _DEBUG
     ListDebug_t debugInfo = {};

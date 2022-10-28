@@ -17,8 +17,6 @@ void _listCtor(List_t *list, long listSize, short needLinear, int *err) {
 
     list->needLinear = needLinear;
     list->free       = 1;
-    list->header     = 0;
-    list->tail       = 0;
     list->size       = 0;
 
     if (err) *err = listVerify(list);
@@ -37,6 +35,7 @@ void fillElemList(ListElement_t *listElems, long capacity, int *err) {
     for (long i = 1; i < capacity + 1; i++) {
         listElems[i].value    = POISON;
         listElems[i].previous = -1;
+        
         if (i != capacity - 1) {
             listElems[i].next =  i + 1;
         } else {
@@ -48,16 +47,10 @@ void fillElemList(ListElement_t *listElems, long capacity, int *err) {
 int listVerify(List_t *list) {
     if (!list)                          return LIST_NULL;
     if (!list->values)                  return LIST_DATA_NULL;
-    if (list->header == POISON)         return LIST_HEADER_POISONED;
-    if (list->header < 0)               return LIST_HEADER_POISONED;
-    if (list->tail == POISON)           return LIST_TAIL_POISONED;
-    if (list->tail < 0)                 return LIST_TAIL_POISONED;
     if (list->free == POISON)           return LIST_FREE_POISONED;
     if (list->free < 0)                 return LIST_FREE_POISONED;
     if (list->size == POISON)           return LIST_SIZE_POISONED;
     if (list->size < 0)                 return LIST_SIZE_POISONED;
-    if (list->header > list->capacity)  return LIST_HEADER_POISONED;
-    if (list->tail   > list->capacity)  return LIST_TAIL_POISONED;
     
     for (long i = 1; i < list->capacity; i++) {
         if (list->values[i].value == POISON)    return ELEM_VALUE_POISONED;
@@ -80,53 +73,30 @@ long _listInsertPhys(List_t *list, Elem_t value, long index, int *err) {
     long nextFree =  list->values[list->free].next;
     long pushInd  = list->free;
 
-    // push to empty list
     // список, через отдельные блоки и указатели (классический)
     // каждый сделан отдельным каллоком, с указателем на некст и прев
     // список структур
-    if (list->tail == 0 && index == 1) {
-        list->values[list->free].value     = value;
+
+    list->values[list->free].value     = value;
+
+    if (list->size == 0) {
         list->values[list->free].next      = 0;
         list->values[list->free].previous  = 0;
 
-        list->tail       = list->free;
-        list->free       = nextFree;
-        list->linearized = 1;
-        list->header     = 1;
+        list->values[0].next = 1;
+    } else {
+        list->values[list->free].next      = list->values[index].next;
+        list->values[list->free].previous  = index;
 
-        list->size++;
-
-        return pushInd;
-    }   
-
-    // == push back
-    if (list->tail <= index) {
-        list->values[list->free].value     = value;
-        list->values[list->free].next      = 0;
-        list->values[list->free].previous  = list->tail;
-
-        list->values[list->tail].next      = list->free;
-
-        list->tail       = list->free;
-        list->free       = nextFree;
-
-        list->size++;
-
-        return pushInd;
+        list->values[list->values[index].next].previous = list->free;
+        list->values[index]                   .next     = list->free;
     }
 
-    CHECK(list->values[index].previous == -1, INDEX_INCORRECT);
-
-    // push after
-    list->values[list->free].value     = value;
-    list->values[list->free].next      = list->values[index].next;
-    list->values[list->free].previous  = index;
-
-    list->values[list->values[index].next].previous = list->free;
-    list->values[index]                   .next     = list->free;
-
     list->free       = nextFree;
-    list->linearized = 0;
+
+    if (index == list->size + 1) {
+        list->linearized = 0;
+    }
  
     list->size++;
 
@@ -149,60 +119,6 @@ Elem_t _listRemovePhys(List_t *list, long index, int *err) {
     CHECK(list->size == 0, NOTHING_TO_DELETE);
     CHECK(list->values[index].value == POISON, ALREADY_POISON);
 
-    // delete last element in list
-    if (list->size == 1) {
-        Elem_t returnValue = list->values[index].value;
-
-        list->values[index].value      = POISON;
-        list->values[index].next       = list->free;
-        list->values[index].previous   = -1;
-
-        list->free       = index;
-        list->size       = 0;
-        list->tail       = 0;
-        list->linearized = 1;
-        list->header     = 0;
-
-        return returnValue;
-    }
-
-    // delete first element (in non-empty list)
-    if (index == 1) {
-        Elem_t returnValue = list->values[index].value;
-
-        list->values[index].value      = POISON;
-        list->header                   = list->values[index].next;
-        list->values[index].next       = list->free;
-        list->values[index].previous   = -1;
-
-        list->size--;
-        list->free   = index;
-
-        return returnValue;
-    }
-
-    // pop from back
-    if (list->tail == index) {
-        printf("int");
-        Elem_t returnValue = list->values[index].value;
-
-        list->values[index].value = POISON;
-
-        list->values[list->values[index].previous].next     = list->values[index].next;
-        list->values[list->values[index].next]    .previous = list->values[index].previous;
-        list->values[index]                       .next     = list->free;
-
-        list->tail =  list->values[index].previous;
-        list->values[index].previous   = -1;
-
-        list->size--;
-        list->free       = index;
-        list->linearized = 0;
-
-        return returnValue;
-    }
-
-    // BASA case
     Elem_t returnValue = list->values[index].value;
 
     list->values[index].value = POISON;
@@ -235,7 +151,7 @@ Elem_t listRemove(List_t *list, long index, int *err) {
 
     if (list->size == 0) return 1;
 
-    long pos = list->header;
+    long pos = list->values[0].next;
     if (logicIndex == 0) return pos;
 
     if (list->linearized) return logicIndex + 1;
@@ -260,7 +176,7 @@ void listLinearize(List_t *list, int *err) {
 
     fillElemList(elements, list->capacity, err);
 
-    long oldIndex = list->header;
+    long oldIndex = list->values[0].next;
     for (long i = 0; i < list->size; i++) {
         elements[i + 1].value = list->values[oldIndex].value;
 
@@ -356,8 +272,6 @@ void listDtor(List_t *list, int *err) {
         free(list->values);
     }
 
-    list->header     = POISON;
-    list->tail       = POISON;
     list->free       = POISON;
     list->size       = POISON;
     list->capacity   = POISON;
@@ -375,10 +289,8 @@ void visualGraph(List_t *list, const char *outputName) {
 
     mprintf(
                 tempFile, 
-                "\tinfo[shape=record, style=\"rounded, filled\", fillcolor=\"#d0d1f2\", label=\"{{header: %ld | tail: %ld | free: %ld} | \
+                "\tinfo[shape=record, style=\"rounded, filled\", fillcolor=\"#d0d1f2\", label=\"{{free: %ld} | \
                     {size: %ld | cap: %ld} | {linearized: %d |needLinear: %d} }\"];\n", 
-                list->header,
-                list->tail,
                 list->free,
                 list->size,
                 list->capacity,
@@ -414,7 +326,7 @@ void visualGraph(List_t *list, const char *outputName) {
     // from 0 to 0
     mprintf(tempFile, "\tlabel0->label0 [dir=both, color=\"red:blue\"]\n");
 
-    long index = list->header;
+    long index = list->values[0].next;
     for (long i = 0; i < list->size; i++) {
         long nextIndex =  list->values[index].next;
         long prevIndex =  list->values[index].previous;
@@ -425,7 +337,7 @@ void visualGraph(List_t *list, const char *outputName) {
         index = nextIndex;
     }
 
-    mprintf(tempFile, "\tlabel%ld->label%ld [color=\"blue\"]\n", list->tail, list->values[list->tail].previous);
+    mprintf(tempFile, "\tlabel%ld->label%ld [color=\"blue\"]\n", list->values[0].previous, list->values[list->values[0].previous].previous);
 
     index = list->free;
     for (long i = 0; i < list->capacity - list->size; i++) {
@@ -465,8 +377,6 @@ void dumpList(List_t *list, int errorCode, const char *fileName, const char *fun
     }
 
     mprintf(logFile, "List_t[%p] '%s' at %s at %s(%d)\n", list, list->debugInfo.name, list->debugInfo.createFunc, list->debugInfo.createFile, list->debugInfo.createLine);
-    mprintf(logFile, "\theader = %ld\n", list->header);
-    mprintf(logFile, "\ttail = %ld\n", list->tail);
     mprintf(logFile, "\tfree = %ld\n", list->free);
     mprintf(logFile, "\tsize = %ld\n", list->size);
     mprintf(logFile, "\tcapacity = %ld\n", list->capacity);
