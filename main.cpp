@@ -8,29 +8,22 @@ size_t MAX_LIST_LENGTH = 256;
 int main() {
     List_t list = {};
     int err = 0;
-    listCtor(&list, 10, 0, &err);
+    listCtor(&list, 2, 1, &err);
+    DUMP(&list, 0);
+
+    listPushFront(&list, 1);
+    DUMP(&list, 0);
+    listPushFront(&list, 2);
+    DUMP(&list, 0);
+    listPushFront(&list, 3);
+    DUMP(&list, 0);
+    listPushBack(&list, 4);
+    DUMP(&list, 0);
+    listPushBack(&list, 5);
+    DUMP(&list, 0);
+    listPushBack(&list, 6);
     DUMP(&list, 0);
     // visualGraph(&list, "test.png");
-
-    _listInsertPhys(&list, 1, 0);
-    _listInsertPhys(&list, 2, 1);
-    DUMP(&list, 0);
-    _listInsertPhys(&list, 3, 2);
-    DUMP(&list, 0);
-    _listInsertPhys(&list, 4, 3);
-    DUMP(&list, 0);
-    // listInsert(&list, 4, 1);
-    // DUMP(&list, 0);
-    // listInsert(&list, 5, 1);
-    // DUMP(&list, 0);
-    // listRemove(&list, 1);
-    // DUMP(&list, 0);
-    // listRemove(&list, 0);
-    // DUMP(&list, 0);
-    // // DUMP(&list, 0);
-    // listResize(&list, 8);
-    // DUMP(&list, 0);
-    // //listLinearize(&list);
 
     listDtor(&list, &err);
 

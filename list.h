@@ -77,6 +77,7 @@ struct List_t {
     if (expression) {                 \
         DUMP(list, errCode);           \
         if (err) *err = errCode;        \
+        exit(errCode);                   \
     }                                     \
 }                                          \
 
@@ -109,6 +110,10 @@ int listVerify(List_t *list);
 long _listInsertPhys(List_t *list, Elem_t value, long index, int *err = nullptr);
 
 long listInsert(List_t *list, Elem_t value, long index, int *err = nullptr);
+
+long listPushBack(List_t *list, Elem_t value, int *err = nullptr);
+
+long listPushFront(List_t *list, Elem_t value, int *err = nullptr);
 
 Elem_t _listRemovePhys(List_t *list, long index, int *err = nullptr);
 

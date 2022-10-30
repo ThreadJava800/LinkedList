@@ -1,16 +1,21 @@
 digraph structs {
 	rankdir=LR;
-	info[shape=record, style="rounded, filled", fillcolor="#d0d1f2", label="{{free: 1} |                     {size: 0 | cap: 5} | {linearized: 1 |needLinear: 0} }"];
-	label0[shape=record, style="rounded, filled", fillcolor="#f593a8", label="{val: 48879 | {n: 0 | p: 0} }"];
-	label1[shape=record, style="rounded, filled", fillcolor="#0ba172", label="{val: 48879 | {n: 2 | p: 4} }"];
-	label2[shape=record, style="rounded, filled", fillcolor="#0ba172", label="{val: 48879 | {n: 3 | p: 1} }"];
-	label3[shape=record, style="rounded, filled", fillcolor="#0ba172", label="{val: 48879 | {n: 4 | p: 2} }"];
-	label4[shape=record, style="rounded, filled", fillcolor="#0ba172", label="{val: 48879 | {n: 1 | p: 3} }"];
-	label0->label1 [color="#dce6e3", style="dashed",arrowhead="none"]	label1->label2 [color="#dce6e3", style="dashed",arrowhead="none"]	label2->label3 [color="#dce6e3", style="dashed",arrowhead="none"]	label3->label4 [color="#dce6e3", style="dashed",arrowhead="none"]	label0->label0 [dir=both, color="red:blue"]
-	label0->label0 [color="blue"]
-	label1->label2 [color="#038c61"]
-	label2->label3 [color="#038c61"]
-	label3->label4 [color="#038c61"]
-	label4->label1 [color="#038c61"]
-	label1->label2 [color="#038c61"]
+	info[shape=record, style="rounded, filled", fillcolor="#d0d1f2", label="{{free: 5} |                     {size: 4 | cap: 8} | {linearized: 1 |needLinear: 1} }"];
+	label0[shape=record, style="rounded, filled", fillcolor="#f593a8", label="{val: 48879 | {n: 1 | p: 4} }"];
+	label1[shape=record, style="rounded, filled", fillcolor="#72eb6c", label="{val: 1 | {n: 2 | p: 0} }"];
+	label2[shape=record, style="rounded, filled", fillcolor="#72eb6c", label="{val: 2 | {n: 3 | p: 1} }"];
+	label3[shape=record, style="rounded, filled", fillcolor="#72eb6c", label="{val: 3 | {n: 4 | p: 2} }"];
+	label4[shape=record, style="rounded, filled", fillcolor="#72eb6c", label="{val: 4 | {n: 0 | p: 3} }"];
+	label5[shape=record, style="rounded, filled", fillcolor="#0ba172", label="{val: 48879 | {n: 6 | p: -1} }"];
+	label6[shape=record, style="rounded, filled", fillcolor="#0ba172", label="{val: 48879 | {n: 7 | p: -1} }"];
+	label7[shape=record, style="rounded, filled", fillcolor="#0ba172", label="{val: 48879 | {n: 0 | p: -1} }"];
+	label0->label1 [color="#dce6e3", style="dashed",arrowhead="none"]	label1->label2 [color="#dce6e3", style="dashed",arrowhead="none"]	label2->label3 [color="#dce6e3", style="dashed",arrowhead="none"]	label3->label4 [color="#dce6e3", style="dashed",arrowhead="none"]	label4->label5 [color="#dce6e3", style="dashed",arrowhead="none"]	label5->label6 [color="#dce6e3", style="dashed",arrowhead="none"]	label6->label7 [color="#dce6e3", style="dashed",arrowhead="none"]	label0->label0 [dir=both, color="red:blue"]
+	label1->label2 [color="red"]
+	label2->label3 [color="red"]
+	label2->label1 [color="blue"]
+	label3->label4 [color="red"]
+	label3->label2 [color="blue"]
+	label4->label3 [color="blue"]
+	label5->label6 [color="#038c61"]
+	label6->label7 [color="#038c61"]
 }

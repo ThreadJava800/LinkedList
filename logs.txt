@@ -1,56 +1,98 @@
 Assertion failed with code 0
 in int main() at main.cpp(12)
-List_t[0x7ffc92daafe0] '&list' at int main() at main.cpp(11)
+List_t[0x7ffd5a8df940] '&list' at int main() at main.cpp(11)
 	free = 1
 	size = 0
-	capacity = 10
+	capacity = 2
 	linearized = 1
 Values:
-    48879     48879     48879     48879     48879     48879     48879     48879     48879     48879 
+    48879     48879 
 Next:
-        0         2         3         4         5         6         7         8         9         0 
+        0         0 
 Previous:
-        0        -1        -1        -1        -1        -1        -1        -1        -1        -1 
+        0        -1 
+
+Assertion failed with code 0
+in int main() at main.cpp(15)
+List_t[0x7ffd5a8df940] '&list' at int main() at main.cpp(11)
+	free = 2
+	size = 1
+	capacity = 4
+	linearized = 1
+Values:
+    48879         1     48879     48879 
+Next:
+        1         0         3         0 
+Previous:
+        1         0        -1        -1 
 
 Assertion failed with code 0
 in int main() at main.cpp(17)
-List_t[0x7ffc92daafe0] '&list' at int main() at main.cpp(11)
+List_t[0x7ffd5a8df940] '&list' at int main() at main.cpp(11)
 	free = 3
 	size = 2
-	capacity = 10
+	capacity = 4
 	linearized = 0
 Values:
-    48879         1         2     48879     48879     48879     48879     48879     48879     48879 
+    48879         1         2     48879 
 Next:
-        1         2         0         4         5         6         7         8         9         0 
+        2         0         1         0 
 Previous:
-        2         0         1        -1        -1        -1        -1        -1        -1        -1 
+        1         2         0        -1 
 
 Assertion failed with code 0
 in int main() at main.cpp(19)
-List_t[0x7ffc92daafe0] '&list' at int main() at main.cpp(11)
+List_t[0x7ffd5a8df940] '&list' at int main() at main.cpp(11)
 	free = 4
 	size = 3
-	capacity = 10
+	capacity = 8
 	linearized = 0
 Values:
-    48879         1         2         3     48879     48879     48879     48879     48879     48879 
+    48879         2         1         3     48879     48879     48879     48879 
 Next:
-        1         2         3         0         5         6         7         8         9         0 
+        3         2         0         1         5         6         7         0 
 Previous:
-        3         0         1         2        -1        -1        -1        -1        -1        -1 
+        2         3         1         0        -1        -1        -1        -1 
 
 Assertion failed with code 0
 in int main() at main.cpp(21)
-List_t[0x7ffc92daafe0] '&list' at int main() at main.cpp(11)
+List_t[0x7ffd5a8df940] '&list' at int main() at main.cpp(11)
 	free = 5
 	size = 4
-	capacity = 10
+	capacity = 8
 	linearized = 0
 Values:
-    48879         1         2         3         4     48879     48879     48879     48879     48879 
+    48879         2         1         3         4     48879     48879     48879 
 Next:
-        1         2         3         4         0         6         7         8         9         0 
+        3         2         4         1         0         6         7         0 
 Previous:
-        4         0         1         2         3        -1        -1        -1        -1        -1 
+        4         3         1         0         2        -1        -1        -1 
+
+Assertion failed with code 0
+in int main() at main.cpp(23)
+List_t[0x7ffd5a8df940] '&list' at int main() at main.cpp(11)
+	free = 6
+	size = 5
+	capacity = 8
+	linearized = 0
+Values:
+    48879         2         1         3         4         5     48879     48879 
+Next:
+        3         2         4         1         5         0         7         0 
+Previous:
+        5         3         1         0         2         4        -1        -1 
+
+Assertion failed with code 0
+in int main() at main.cpp(25)
+List_t[0x7ffd5a8df940] '&list' at int main() at main.cpp(11)
+	free = 7
+	size = 6
+	capacity = 8
+	linearized = 0
+Values:
+    48879         2         1         3         4         5         6     48879 
+Next:
+        3         2         4         1         5         6         0         0 
+Previous:
+        6         3         1         0         2         4         5        -1 
 

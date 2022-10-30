@@ -70,24 +70,22 @@ long _listInsertPhys(List_t *list, Elem_t value, long index, int *err) {
         listResize(list, newCapacity, err);
     }
 
+    if (index != list->values[0].previous) {
+        list->linearized = 0;
+    }
+
     long nextFree =  list->values[list->free].next;
     long pushInd  = list->free;
 
     list->values[pushInd].value     = value;
-
     list->values[pushInd].next      = list->values[index].next;
     list->values[pushInd].previous  = index;
 
     list->values[list->values[index].next].previous = list->free;
     list->values[index]                   .next     = list->free;
-
-    list->free       = nextFree;
-
-    if (index != list->values[0].previous) {
-        list->linearized = 0;
-    }
  
     list->size++;
+    list->free = nextFree;
 
     if (err) *err = listVerify(list);
 
@@ -102,11 +100,28 @@ long listInsert(List_t *list, Elem_t value, long index, int *err) {
     return _listInsertPhys(list, value, physIndex, err);
 }
 
+long listPushBack(List_t *list, Elem_t value, int *err) {
+    CHECK(!list, LIST_NULL);
+
+    long lastInd = list->values[0].previous;
+    return _listInsertPhys(list, value, lastInd, err);
+}
+
+long listPushFront(List_t *list, Elem_t value, int *err) {
+    CHECK(!list, LIST_NULL);
+
+    return _listInsertPhys(list, value, 0, err);
+}
+
 Elem_t _listRemovePhys(List_t *list, long index, int *err) {
     CHECK(!list, LIST_NULL);
-    CHECK(index > list->capacity, INDEX_BIGGER_SIZE);
+    CHECK(index > list->capacity || index <= 0, INDEX_BIGGER_SIZE);
     CHECK(list->size == 0, NOTHING_TO_DELETE);
     CHECK(list->values[index].value == POISON, ALREADY_POISON);
+
+    if (index != list->values[0].previous) {
+        list->linearized = 0;
+    }
 
     Elem_t returnValue = list->values[index].value;
 
@@ -116,8 +131,7 @@ Elem_t _listRemovePhys(List_t *list, long index, int *err) {
     list->values[list->values[index].next]    .previous = list->values[index].previous;
     list->values[index]                       .next     = list->free;
     list->values[index]                       .next     = list->free;
-
-    list->values[index].previous = -1;
+    list->values[index]                       .previous = -1;
 
     list->size--;
     list->free = index;
@@ -138,12 +152,12 @@ Elem_t listRemove(List_t *list, long index, int *err) {
     CHECK(!list, LIST_NULL);
     CHECK(logicIndex > list->capacity, INDEX_INCORRECT);
 
-    if (list->size == 0) return 1;
+    if (list->size == 0) return 0;
 
     long pos = list->values[0].next;
     if (logicIndex == 0) return pos;
 
-    if (list->linearized) return logicIndex + 1;
+    if (list->linearized) return logicIndex;
 
     for (long i = 0; i < logicIndex; i++) {
         if (list->values[pos].next == 0) {
@@ -177,6 +191,9 @@ void listLinearize(List_t *list, int *err) {
 
         oldIndex =  list->values[oldIndex].next;
     }
+
+    elements[0].next = 1;
+    elements[0].previous = list->size;
 
     free(list->values);
     list->values     = elements;
