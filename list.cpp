@@ -289,71 +289,72 @@ void listDtor(List_t *list, int *err) {
 void visualGraph(List_t *list, const char *action) {
     if (!list) return;
 
-    FILE *tempFile = fopen("temp.dot", "w");
+    FILE *tempFile = fopen("graph/temp.dot", "w");
     if (!tempFile) return;
 
     mprintf(tempFile, "digraph structs {\n");
     mprintf(tempFile, "\trankdir=LR;\n");
 
-    mprintf(
-                tempFile, 
-                "\tinfo[shape=record, style=\"rounded, filled\", fillcolor=\"#d0d1f2\", label=\"{{free: %ld} | \
-                    {size: %ld | cap: %ld} | {linearized: %d |needLinear: %d} }\"];\n", 
-                list->free,
-                list->size,
-                list->capacity,
-                list->linearized,
-                list->needLinear
-            );
-
     for (long i = 0; i < list->capacity; i++) {
-        char color[MAX_COMMAND_LENGTH];
         if (i == 0) {
-            strcpy(color, NULL_BLOCK);
-        } else if (list->values[i].value == POISON) {
-            strcpy(color, FREE_BLOCK);
-        } else {
-            strcpy(color, WORK_BLOCK);
-        }
-
-        mprintf(
+                mprintf(
                     tempFile, 
-                    "\tlabel%ld[shape=record, style=\"rounded, filled\", fillcolor=\"%s\", label=\"{index: %ld | val: %d | {n: %ld | p: %ld} }\"];\n", 
+                    "\tlabel%ld[shape=record, style=\"rounded, filled\", fillcolor=\"%s\", label=\"{{phys: %ld | log: %ld} | val: %d | {n: %ld | p: %ld} }\"];\n", 
                     i, 
-                    color,
+                    NULL_BLOCK,
                     i,
+                    POISON,
                     list->values[i].value, 
                     list->values[i].next,
                     list->values[i].previous
                 );
+
+        } else if (list->values[i].value == POISON) {
+                mprintf(
+                    tempFile, 
+                    "\tlabel%ld[shape=record, style=\"rounded, filled\", fillcolor=\"%s\", label=\"{{phys: %ld | log: %ld} | val: %d | {n: %ld | p: %ld} }\"];\n", 
+                    i, 
+                    FREE_BLOCK,
+                    i,
+                    physicToLogic(list, list->free, i),
+                    list->values[i].value, 
+                    list->values[i].next,
+                    list->values[i].previous
+                );
+        } else {
+                mprintf(
+                    tempFile, 
+                    "\tlabel%ld[shape=record, style=\"rounded, filled\", fillcolor=\"%s\", label=\"{{phys: %ld | log: %ld} | val: %d | {n: %ld | p: %ld} }\"];\n", 
+                    i, 
+                    WORK_BLOCK,
+                    i,
+                    physicToLogic(list, list->values[0].next, i),
+                    list->values[i].value, 
+                    list->values[i].next,
+                    list->values[i].previous
+                );
+        }
     }
 
     for (long i = 0; i < list->capacity - 1; i++) {
         mprintf(tempFile, "\tlabel%ld->label%ld [color=\"%s\", style=\"dashed\",arrowhead=\"none\"]", i, i + 1, PHYS_LINK);
     }
 
-    // from 0 to 0
-    mprintf(tempFile, "\tlabel0->label0 [dir=both, color=\"red:blue\"]\n");
-
-    long index = list->values[0].next;
-    for (long i = 0; i < list->size; i++) {
+    long index = 0;
+    for (long i = 0; i < list->size + 1; i++) {
         long nextIndex =  list->values[index].next;
-        long prevIndex =  list->values[index].previous;
-        if (nextIndex == 0) break;
+        //long prevIndex =  list->values[index].previous;
 
         mprintf(tempFile, "\tlabel%ld->label%ld [color=\"red\"]\n", index, nextIndex);
-        if (prevIndex) mprintf(tempFile, "\tlabel%ld->label%ld [color=\"blue\"]\n", index, prevIndex);
+        //if (index) mprintf(tempFile, "\tlabel%ld->label%ld [color=\"blue\"]\n", index, prevIndex);
         index = nextIndex;
     }
-
-    mprintf(tempFile, "\tlabel%ld->label%ld [color=\"blue\"]\n", list->values[0].previous, list->values[list->values[0].previous].previous);
 
     index = list->free;
     for (long i = 0; i < list->capacity - list->size; i++) {
         long nextIndex =  list->values[index].next;
-        if (nextIndex == 0) break;
 
-        mprintf(tempFile, "\tlabel%ld->label%ld [color=\"#038c61\"]\n", index, nextIndex);
+        if (index) mprintf(tempFile, "\tlabel%ld->label%ld [color=\"#038c61\"]\n", index, nextIndex);
         index = nextIndex;
     }
 
@@ -362,25 +363,41 @@ void visualGraph(List_t *list, const char *action) {
     fclose(tempFile);
 
     char command[MAX_COMMAND_LENGTH] = {};
-    sprintf(command, "dot -Tsvg temp.dot > img%ld.svg", grDumpCounter);
+    sprintf(command, "dot -Tsvg graph/temp.dot > graph/img%ld.svg", grDumpCounter);
     system(command);
 
     // adding to html
     FILE* graphFile = nullptr;
     if (grDumpCounter == 0) {
-        graphFile = fopen("gdump.html", "w");
+        graphFile = fopen("graph/gdump.html", "w");
+        fprintf(graphFile, "<pre>\n");
     } else {
-        graphFile = fopen("gdump.html", "a");
+        graphFile = fopen("graph/gdump.html", "a");
     }
     if (!graphFile) return;
 
-    fprintf(graphFile, "<pre>\n");
     fprintf(graphFile, "<hr>\n<h2>%s </h2>\n", action);
+    fprintf(graphFile, "<h3>Size: %ld, capacity: %ld</h3>\n", list->size, list->capacity);
+    fprintf(graphFile, "<h3>Linearized: %d, needLinear: %d</h3>\n", list->linearized, list->needLinear);
+    fprintf(graphFile, "<h3>Free (physical index): %ld</h3>\n", list->free);
     fprintf(graphFile, "<img src=\"img%ld.svg\" />\n</hr>\n", grDumpCounter);
 
     fclose(graphFile);
 
     grDumpCounter++;
+}
+
+long physicToLogic(List_t *list, long start, long phys, int *err) {
+    CHECK(!list, LIST_NULL);
+
+    long logic = 0;
+    long physInd = start;
+    while (physInd != phys) {
+        logic++;
+        physInd = list->values[physInd].next;
+    }
+
+    return logic;
 }
 
 #if _DEBUG

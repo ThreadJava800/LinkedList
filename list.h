@@ -135,6 +135,8 @@ void listDtor(List_t *list, int *err = nullptr);
 
 void visualGraph(List_t *list, const char *action = "");
 
+long physicToLogic(List_t *list, long start, long phys, int *err = nullptr);
+
 #if _DEBUG
 
     void mprintf(FILE *file, const char *fmt...);
