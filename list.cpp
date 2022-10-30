@@ -6,6 +6,8 @@ FILE *logFile = fopen("logs.txt", "w");
 int   onClose = atexit(closeLogfile);
 #endif
 
+long grDumpCounter = 0;
+
 void _listCtor(List_t *list, long listSize, short needLinear, int *err) {
     CHECK(!list, LIST_NULL);
 
@@ -284,7 +286,7 @@ void listDtor(List_t *list, int *err) {
     list->linearized = 1;
 }
 
-void visualGraph(List_t *list, const char *outputName) {
+void visualGraph(List_t *list, const char *action) {
     if (!list) return;
 
     FILE *tempFile = fopen("temp.dot", "w");
@@ -316,9 +318,10 @@ void visualGraph(List_t *list, const char *outputName) {
 
         mprintf(
                     tempFile, 
-                    "\tlabel%ld[shape=record, style=\"rounded, filled\", fillcolor=\"%s\", label=\"{val: %d | {n: %ld | p: %ld} }\"];\n", 
+                    "\tlabel%ld[shape=record, style=\"rounded, filled\", fillcolor=\"%s\", label=\"{index: %ld | val: %d | {n: %ld | p: %ld} }\"];\n", 
                     i, 
                     color,
+                    i,
                     list->values[i].value, 
                     list->values[i].next,
                     list->values[i].previous
@@ -358,13 +361,26 @@ void visualGraph(List_t *list, const char *outputName) {
 
     fclose(tempFile);
 
-    char command[MAX_COMMAND_LENGTH] = "dot -Tsvg temp.dot > ";
-    strcat(command, outputName);
+    char command[MAX_COMMAND_LENGTH] = {};
+    sprintf(command, "dot -Tsvg temp.dot > img%ld.svg", grDumpCounter);
     system(command);
-    
-    strcpy(command, "xdg-open ");
-    strcat(command, outputName);
-    system(command);
+
+    // adding to html
+    FILE* graphFile = nullptr;
+    if (grDumpCounter == 0) {
+        graphFile = fopen("gdump.html", "w");
+    } else {
+        graphFile = fopen("gdump.html", "a");
+    }
+    if (!graphFile) return;
+
+    fprintf(graphFile, "<pre>\n");
+    fprintf(graphFile, "<hr>\n<h2>%s </h2>\n", action);
+    fprintf(graphFile, "<img src=\"img%ld.svg\" />\n</hr>\n", grDumpCounter);
+
+    fclose(graphFile);
+
+    grDumpCounter++;
 }
 
 #if _DEBUG

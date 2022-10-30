@@ -133,7 +133,7 @@ void poisonList(List_t *list, long newCapacity, long oldCapacity, int *err = nul
 
 void listDtor(List_t *list, int *err = nullptr);
 
-void visualGraph(List_t *list, const char *outputName);
+void visualGraph(List_t *list, const char *action = "");
 
 #if _DEBUG
 

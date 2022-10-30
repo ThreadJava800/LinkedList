@@ -23,7 +23,8 @@ int main() {
     DUMP(&list, 0);
     listPushBack(&list, 6);
     DUMP(&list, 0);
-    // visualGraph(&list, "test.png");
+    visualGraph(&list, "WOW");
+    visualGraph(&list, "HAHA");
 
     listDtor(&list, &err);
 
