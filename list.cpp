@@ -73,28 +73,17 @@ long _listInsertPhys(List_t *list, Elem_t value, long index, int *err) {
     long nextFree =  list->values[list->free].next;
     long pushInd  = list->free;
 
-    // список, через отдельные блоки и указатели (классический)
-    // каждый сделан отдельным каллоком, с указателем на некст и прев
-    // список структур
+    list->values[pushInd].value     = value;
 
-    list->values[list->free].value     = value;
+    list->values[pushInd].next      = list->values[index].next;
+    list->values[pushInd].previous  = index;
 
-    if (list->size == 0) {
-        list->values[list->free].next      = 0;
-        list->values[list->free].previous  = 0;
-
-        list->values[0].next = 1;
-    } else {
-        list->values[list->free].next      = list->values[index].next;
-        list->values[list->free].previous  = index;
-
-        list->values[list->values[index].next].previous = list->free;
-        list->values[index]                   .next     = list->free;
-    }
+    list->values[list->values[index].next].previous = list->free;
+    list->values[index]                   .next     = list->free;
 
     list->free       = nextFree;
 
-    if (index == list->size + 1) {
+    if (index != list->values[0].previous) {
         list->linearized = 0;
     }
  

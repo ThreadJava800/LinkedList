@@ -12,13 +12,12 @@ int main() {
     DUMP(&list, 0);
     // visualGraph(&list, "test.png");
 
-    printf("%d ", logicToPhysics(&list, 0));
-    listInsert(&list, 1, 1);
-    printf("%d ", logicToPhysics(&list, 0));
+    _listInsertPhys(&list, 1, 0);
+    _listInsertPhys(&list, 2, 1);
     DUMP(&list, 0);
-    listInsert(&list, 2, 1);
+    _listInsertPhys(&list, 3, 2);
     DUMP(&list, 0);
-    listInsert(&list, 3, 1);
+    _listInsertPhys(&list, 4, 3);
     DUMP(&list, 0);
     // listInsert(&list, 4, 1);
     // DUMP(&list, 0);
