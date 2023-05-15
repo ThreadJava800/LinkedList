@@ -8,13 +8,25 @@
 #include <math.h>
 #include <string.h>
 
+#define _DEBUG 0
+
 #ifndef _DEBUG
 #define _DEBUG 0
 #endif
 
-typedef int Elem_t;
+#define MAKE_CHECKS_LIST 0
 
-const Elem_t POISON = 0xBEEF;
+struct Pair_t {
+    const char *key   = nullptr;
+    const char *value = nullptr;
+
+    size_t keyLength  = 0;
+};
+
+typedef Pair_t Elem_t;
+typedef bool (*CompareFunc_t)(Elem_t *val1, Elem_t *val2);
+
+const Elem_t POISON = {};
 
 const int RESIZE_COEFFICIENT = 2;
 
@@ -41,12 +53,14 @@ enum ListErrors {
     ALREADY_POISON        = -15,
     LOSING_DATA           = -16,
     CANNOT_OPEN_FILE      = -17,
+    FUNC_POINTER_WAS_NULL = -18,
+    ELEM_T_PTR_WAS_NULL   = -19,
 };
 
 struct ListElement_t {
     Elem_t value  = POISON;
-    long previous = POISON;
-    long next     = POISON;
+    long previous = 0xBEEF;
+    long next     = 0xBEEF;
 };
 
 #if _DEBUG
@@ -60,10 +74,10 @@ struct ListDebug_t {
 
 struct List_t {
     ListElement_t *values      = {};
-    long        free           = POISON;
+    long        free           = 0xBEEF;
 
-    long        size           = POISON;
-    long        capacity       = POISON;
+    long        size           = 0xBEEF;
+    long        capacity       = 0xBEEF;
 
     short         linearized   = 1;
     short         needLinear   = 1;
@@ -73,6 +87,7 @@ struct List_t {
     #endif
 };
 
+#if MAKE_CHECKS_LIST
 #define CHECK(expression, errCode) { \
     if (expression) {                 \
         DUMP(list, errCode);           \
@@ -80,6 +95,10 @@ struct List_t {
         exit(errCode);                   \
     }                                     \
 }                                          \
+
+#else
+#define CHECK(expression, errCode) {}
+#endif
 
 void _listCtor(List_t *list, long listSize, short needLinear, int *err = nullptr);
 
@@ -105,8 +124,6 @@ void _listCtor(List_t *list, long listSize, short needLinear, int *err = nullptr
 
 void fillElemList(ListElement_t *listElems, long capacity, int *err = nullptr);
 
-int listVerify(List_t *list);
-
 long _listInsertPhys(List_t *list, Elem_t value, long index, int *err = nullptr);
 
 long listInsert(List_t *list, Elem_t value, long index, int *err = nullptr);
@@ -119,13 +136,22 @@ Elem_t _listRemovePhys(List_t *list, long index, int *err = nullptr);
 
 Elem_t listRemove(List_t *list, long index, int *err = nullptr);
 
+ListElement_t *listFind(List_t *list, Elem_t *searchElem, CompareFunc_t comparator);
+
 [[nodiscard]] long logicToPhysics(List_t *list, long logicIndex, int *err = nullptr);
+
+inline __attribute__((always_inline)) Elem_t listGet(List_t *list, long index, int *err = nullptr) {
+    CHECK(!list, LIST_NULL);
+    CHECK(index > list->capacity, INDEX_BIGGER_SIZE);
+    CHECK(list->size == 0, NOTHING_TO_DELETE);
+
+    long physIndex = logicToPhysics(list, index);
+    return list->values[physIndex].value;
+}
 
 void listLinearize(List_t *list, int *err = nullptr);
 
 void listResize(List_t *list, long newCapacity, int *err = nullptr);
-
-int checkForPoisons(List_t *list, long newCapacity, int *err = nullptr);
 
 void listRealloc(List_t *list, long newCapacity, int *err = nullptr);
 
@@ -137,10 +163,9 @@ void visualGraph(List_t *list, const char *action = "");
 
 long physicToLogic(List_t *list, long start, long phys, int *err = nullptr);
 
+void mprintf(FILE *file, const char *fmt...);
+
 #if _DEBUG
-
-    void mprintf(FILE *file, const char *fmt...);
-
     void dumpList(List_t *list, int errorCode, const char *fileName, const char *function, int line);
 
     #define DUMP(list, errorCode) {                                                 \

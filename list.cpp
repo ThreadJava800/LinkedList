@@ -18,10 +18,9 @@ void _listCtor(List_t *list, long listSize, short needLinear, int *err) {
     fillElemList(list->values, listSize, err);
 
     list->needLinear = needLinear;
+    list->linearized = 1;
     list->free       = 1;
     list->size       = 0;
-
-    if (err) *err = listVerify(list);
 }
 
 void fillElemList(ListElement_t *listElems, long capacity, int *err) {
@@ -44,23 +43,6 @@ void fillElemList(ListElement_t *listElems, long capacity, int *err) {
             listElems[i].next = 0;
         }
     }
-}
-
-int listVerify(List_t *list) {
-    if (!list)                          return LIST_NULL;
-    if (!list->values)                  return LIST_DATA_NULL;
-    if (list->free == POISON)           return LIST_FREE_POISONED;
-    if (list->free < 0)                 return LIST_FREE_POISONED;
-    if (list->size == POISON)           return LIST_SIZE_POISONED;
-    if (list->size < 0)                 return LIST_SIZE_POISONED;
-    
-    for (long i = 1; i < list->capacity; i++) {
-        if (list->values[i].value == POISON)    return ELEM_VALUE_POISONED;
-        if (list->values[i].next == POISON)     return ELEM_NEXT_POISONED;
-        if (list->values[i].previous == POISON) return ELEM_PREV_POISONED;
-    }
-
-    return LIST_OK;
 }
 
 long _listInsertPhys(List_t *list, Elem_t value, long index, int *err) {
@@ -88,8 +70,6 @@ long _listInsertPhys(List_t *list, Elem_t value, long index, int *err) {
  
     list->size++;
     list->free = nextFree;
-
-    if (err) *err = listVerify(list);
 
     return pushInd;
 }
@@ -150,6 +130,18 @@ Elem_t listRemove(List_t *list, long index, int *err) {
     return _listRemovePhys(list, physIndex, err);
 }
 
+ListElement_t *listFind(List_t *list, Elem_t *searchElem, CompareFunc_t comparator) {
+    CHECK(!list, LIST_NULL);
+    CHECK(!comparator, FUNC_POINTER_WAS_NULL);
+    CHECK(!searchElem, ELEM_T_PTR_WAS_NULL);
+
+    for (size_t i = 0; i < list->size; i++) {
+        if (comparator(searchElem, &(list->values[i].value))) return &(list->values[i]);
+    }
+
+    return nullptr;
+}
+
 [[nodiscard]] long logicToPhysics(List_t *list, long logicIndex, int *err) {
     CHECK(!list, LIST_NULL);
     CHECK(logicIndex > list->capacity, INDEX_INCORRECT);
@@ -201,8 +193,6 @@ void listLinearize(List_t *list, int *err) {
     list->values     = elements;
     list->linearized = 1;
     list->free       = list->size + 1;
-
-    if (err) *err = listVerify(list);
 }
 
 void listResize(List_t *list, long newCapacity, int *err) {
@@ -213,13 +203,8 @@ void listResize(List_t *list, long newCapacity, int *err) {
     }
 
     if (newCapacity < list->capacity) {
-        // checking if no sensible data will be deleted
-        if (checkForPoisons(list, newCapacity, err)) {
-            listRealloc(list, newCapacity, err);
-            list->values[newCapacity - 1].next = 0;
-        } else {
-            if (err) *err = LOSING_DATA;
-        }
+        listRealloc(list, newCapacity, err);
+        list->values[newCapacity - 1].next = 0;
 
         return;
     }
@@ -227,21 +212,6 @@ void listResize(List_t *list, long newCapacity, int *err) {
     long oldCapacity = list->capacity;
     listRealloc(list, newCapacity, err);
     poisonList (list, newCapacity, oldCapacity, err);
-}
-
-int checkForPoisons(List_t *list, long newCapacity, int *err) {
-     CHECK(!list, LIST_NULL);
-
-     long goodCounter = 0;
-     for (long i = list->capacity - 1; i > 0; i--) {
-        if (list->values[i].value == POISON) {
-            goodCounter++;
-        }
-
-        if (goodCounter >  list->capacity - newCapacity) return 1;
-     }  
-
-     return 0; 
 }
 
 void listRealloc(List_t *list, long newCapacity, int *err) {
@@ -280,9 +250,9 @@ void listDtor(List_t *list, int *err) {
         free(list->values);
     }
 
-    list->free       = POISON;
-    list->size       = POISON;
-    list->capacity   = POISON;
+    list->free       = 0xBEEF;
+    list->size       = 0xBEEF;
+    list->capacity   = 0xBEEF;
     list->linearized = 1;
 }
 
@@ -309,18 +279,6 @@ void visualGraph(List_t *list, const char *action) {
                     list->values[i].previous
                 );
 
-        } else if (list->values[i].value == POISON) {
-                mprintf(
-                    tempFile, 
-                    "\tlabel%ld[shape=record, style=\"rounded, filled\", fillcolor=\"%s\", label=\"{{phys: %ld | log: %ld} | val: %d | {n: %ld | p: %ld} }\"];\n", 
-                    i, 
-                    FREE_BLOCK,
-                    i,
-                    physicToLogic(list, list->free, i),
-                    list->values[i].value, 
-                    list->values[i].next,
-                    list->values[i].previous
-                );
         } else {
                 mprintf(
                     tempFile, 
@@ -400,13 +358,13 @@ long physicToLogic(List_t *list, long start, long phys, int *err) {
     return logic;
 }
 
-#if _DEBUG
 void mprintf(FILE *file, const char *fmt...) {
     va_list args;
     va_start(args, fmt);
     vfprintf(file, fmt, args);
 }
 
+#if _DEBUG
 void dumpList(List_t *list, int errorCode, const char *fileName, const char *function, int line) {
     mprintf(logFile, "Assertion failed with code %d\n", errorCode);
     mprintf(logFile, "in %s at %s(%d)\n", function, fileName, line);
