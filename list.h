@@ -17,14 +17,12 @@
 #define MAKE_CHECKS_LIST 0
 
 struct Pair_t {
-    const char *key   = nullptr;
-    const char *value = nullptr;
-
-    size_t keyLength  = 0;
+    void *key   = nullptr;
+    void *value = nullptr;
 };
 
 typedef Pair_t Elem_t;
-typedef bool (*CompareFunc_t)(Elem_t *val1, Elem_t *val2);
+typedef bool (*CompareFunc_t)(void *value1, void *value2);
 
 const Elem_t POISON = {};
 
